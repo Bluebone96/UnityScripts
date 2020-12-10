@@ -16,9 +16,9 @@ public class CameraMovement : MonoBehaviour {
         player = GameObject.FindGameObjectWithTag("MainPlayer").transform;
         //摄像机相对位置 = 摄像机位置 - 玩家位置
         // relCameraPos = transform.position - player.position + new Vector3(10, 5, 10);
-        relCameraPos = new Vector3(0, 2.5f, -6);
+        relCameraPos = new Vector3(0, 4, -10);
         //实际向量长度-0.5 小一点
-        relCameraPosMag = relCameraPos.magnitude - 0.5f;
+        relCameraPosMag = relCameraPos.magnitude - 3f;
  
     }
  

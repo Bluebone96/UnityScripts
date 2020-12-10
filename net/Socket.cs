@@ -117,7 +117,6 @@ public class ClientSocket : Singleton<ClientSocket>
                 Debug.Log("buffsize is " + (m_tail - m_head) + " less len " + m_msgHeadRecv.m_len);
                 return -1;
             } else {
-                Debug.Log("buff first 4 bytes is " + m_recvbuf[m_head] + m_recvbuf[m_head + 1] + m_recvbuf[m_head + 2] + m_recvbuf[m_head +3]);
                 m_head += (int)MsgHead.headsize();
                 m_message.m_type = m_msgHeadRecv.getType();
                 m_message.m_usrid = m_msgHeadRecv.getId();

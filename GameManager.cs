@@ -15,9 +15,11 @@ public class GameManager : SingletonObject<GameManager>
     public ClientSocket m_Net;
     public EventHandler m_eventhandler;
 
+
     public Dictionary<UInt32, PlayerStatus> AllPlayers;
 
     public PlayerStatus mainPlayer;
+    public UInt32 mainPlayerID;
 
     public PlayerAllFuckInfo fuckall;
 

@@ -13,6 +13,8 @@ public class EventHandler : Singleton<EventHandler>
 
 
     public PlayerInfo m_info;
+
+    public GameObject player;
     
     public Message m_message;
     public ClientSocket m_Net;
@@ -54,7 +56,7 @@ public class EventHandler : Singleton<EventHandler>
     int PlayerInit(Message _msg)
     {
 
-        GameObject player = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/Player"));
+        player = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/Player"));
 
         player.tag = "MainPlayer";
 
@@ -62,25 +64,34 @@ public class EventHandler : Singleton<EventHandler>
 
         camera.transform.SetParent(player.transform);
 
-        PlayerInfo p = player.GetComponent<PlayerStatus>().m_protoInfo;
+        
+        // PlayerInfo p = player.GetComponent<PlayerStatus>().m_protoInfo;
 
         Debug.Log("ParserFrom the data");
         
         GameManager.Instance.fuckall = PlayerAllFuckInfo.Parser.ParseFrom(_msg.m_data);
+
+        // Debug.Log(GameManager.Instance.fuckall.Baseinfo);
         
-        p = GameManager.Instance.fuckall.Baseinfo;
+        //player.GetComponent<PlayerStatus>().m_protoInfo = GameManager.Instance.fuckall.Baseinfo;
+
+        player.GetComponent<PlayerStatus>().init(GameManager.Instance.fuckall.Baseinfo);
+
+        // Debug.Log("+++++++++++++++" + player.GetComponent<PlayerStatus>().m_protoInfo.Name);
+
+        // Debug.Log("player speed = " + player.GetComponent<PlayerStatus>().m_protoInfo.Speed);
 
         Inventory.Instance.Init(GameManager.Instance.fuckall.Baginfo);
 
         Debug.Log("ParserFrom the data end");
 
         GameManager.Instance.mainPlayer = player.GetComponent<PlayerStatus>();
+        GameManager.Instance.mainPlayerID = _msg.m_usrid;
+        
+        GameManager.Instance.AllPlayers.Add(_msg.m_usrid, GameManager.Instance.mainPlayer);
 
-        player.transform.position = new Vector3(p.PosX, 0, p.PosZ);
-
-        player.name = p.Name;
-
-        GameManager.Instance.AllPlayers.Add(_msg.m_usrid, player.GetComponent<PlayerStatus>());
+        player.transform.position = new Vector3(player.GetComponent<PlayerStatus>().m_protoInfo.PosX, 0, player.GetComponent<PlayerStatus>().m_protoInfo.PosZ);
+        player.name = player.GetComponent<PlayerStatus>().m_protoInfo.Name;
 
         GameManager.Instance.m_Net.setID(_msg.m_usrid);
         
@@ -139,17 +150,26 @@ public class EventHandler : Singleton<EventHandler>
         Debug.Log("sync player player id is " + _msg.m_usrid);
         
         UInt32 id = _msg.m_usrid;
-        
-        if (GameManager.Instance.AllPlayers.ContainsKey(id)) {
-
+        if (id  == GameManager.Instance.mainPlayerID)
+        {
+            PlayerInfo info = PlayerInfo.Parser.ParseFrom(_msg.m_data);
+            info.Op = GameManager.Instance.mainPlayer.m_protoInfo.Op;
+            GameManager.Instance.mainPlayer.CheckStatus(info);
+        } 
+        else if (GameManager.Instance.AllPlayers.ContainsKey(id)) 
+        {
             PlayerStatus p = GameManager.Instance.AllPlayers[id];
+
             GameManager.Instance.AllPlayers[id].CheckStatus(PlayerInfo.Parser.ParseFrom(_msg.m_data));
-        } else {
+        } 
+        else 
+        {
             GameObject p = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/Player"));
             
-            PlayerInfo info = p.GetComponent<PlayerStatus>().m_protoInfo;
+            PlayerInfo info = PlayerInfo.Parser.ParseFrom(_msg.m_data);
 
-            info = PlayerInfo.Parser.ParseFrom(_msg.m_data);
+            p.GetComponent<PlayerStatus>().init(info);
+
             p.name = info.Name;
             p.transform.position = new Vector3(info.PosX, 0, info.PosZ);
             GameManager.Instance.AllPlayers.Add(id, p.GetComponent<PlayerStatus>());

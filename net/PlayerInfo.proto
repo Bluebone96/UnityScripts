@@ -3,6 +3,7 @@ syntax = "proto3";
 package Proto.Unity;
 
 message PlayerInfo {
+    
     uint32 id = 1;
     string name = 2;
 

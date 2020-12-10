@@ -22,9 +22,9 @@ public class GetOperation : MonoBehaviour
     {
         buf = new byte[50];
         msg = new MsgHead();
-        m_opNew = new Operation();
+        m_opNew = GameManager.Instance.mainPlayer.m_protoInfo.Op;
         m_opOld = new Operation();
-
+        
         msg.setId(GameManager.Instance.mainPlayer.m_protoInfo.Id);
         msg.setType(EventType.UPDATE);
         m_opNew.H = 0;
@@ -51,14 +51,14 @@ public class GetOperation : MonoBehaviour
         } else {
             m_opNew.H = 0;
         }
-    
+
         if (m_opNew.H != m_opOld.H || m_opNew.V != m_opOld.V) {
             m_opOld.H = m_opNew.H;
             m_opOld.V = m_opNew.V;
-
-            Debug.Log("H:" + m_opNew.H + " V: " + m_opNew.V);
-            Debug.Log("player op H: " + GameManager.Instance.mainPlayer.m_protoInfo.Op.H + " Old H: " + m_opOld.H);
-            Debug.Log("player op V: " + GameManager.Instance.mainPlayer.m_protoInfo.Op.V + " Old V: " + m_opOld.V);
+            
+            // Debug.Log("H:" + m_opNew.H + " V: " + m_opNew.V);
+            // Debug.Log("player op H: " + GameManager.Instance.mainPlayer.m_protoInfo.Op.H + " Old H: " + m_opOld.H);
+            // Debug.Log("player op V: " + GameManager.Instance.mainPlayer.m_protoInfo.Op.V + " Old V: " + m_opOld.V);
             GameManager.Instance.m_Net.SendMessage(m_opNew, EventType.UPDATE);
         }
     }
