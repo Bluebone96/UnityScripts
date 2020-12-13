@@ -6,12 +6,15 @@ using System.Net.Sockets;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading;
+
 using Google.Protobuf;
 using Proto.Unity;
 public class GameManager : SingletonObject<GameManager>
 {
     // Start is called before the first frame update
-    public static Queue<Message> g_mQueue;  // 消息队列 socket收到消息后放进去， eventhandler 取出来进行处理
+    public static ConcurrentQueue<Message> g_mQueue;  // 消息队列 socket收到消息后放进去， eventhandler 取出来进行处理
     public ClientSocket m_Net;
     public EventHandler m_eventhandler;
 
@@ -23,7 +26,7 @@ public class GameManager : SingletonObject<GameManager>
 
     public PlayerAllFuckInfo fuckall;
 
-    public bool pause = true;
+    // public bool pause = true;
     
     // int frame = 1;
     void Awake()
@@ -32,7 +35,7 @@ public class GameManager : SingletonObject<GameManager>
         AllPlayers = new Dictionary<UInt32, PlayerStatus>();
         m_Net = ClientSocket.Instance;
         m_eventhandler = EventHandler.Instance;
-        g_mQueue = new Queue<Message>(100);
+        g_mQueue = new ConcurrentQueue<Message>();
     }
 
 
@@ -49,12 +52,9 @@ public class GameManager : SingletonObject<GameManager>
     }
 
 
-    void FixedUpdate()
+    void Update()
     {
-        m_Net.RecvMessage();
-
         m_eventhandler.DoSomething();
-
     }
 
 
@@ -72,7 +72,6 @@ public class GameManager : SingletonObject<GameManager>
             Debug.Log("send Authentication message failed");
             return -1;
         }
-
         GameStart();
         return 0;
     } 
@@ -81,18 +80,27 @@ public class GameManager : SingletonObject<GameManager>
 
     public void ExitGame()
     {
-        Application.Quit();
+        MsgHead msg = new MsgHead();
+        msg.m_type = (uint)EventType.EXIT;
+        msg.m_len = 0;
+        msg.m_usrid = mainPlayerID;
+        msg.m_errID = 0;
+        byte[] temp = new byte[MsgHead.headsize()];
+        msg.EnCode(temp, 0);
+        m_Net.Send(temp, MsgHead.headsize(), 0);
+        m_Net.DisConnect();
+        Invoke(nameof(Application.Quit), 1f);
     }
 
     public void GamePause()
     {
         Time.timeScale = 0;
-        pause = true;
+        // pause = true;
     }
 
     public void GameStart()
     {
         Time.timeScale = 1;
-        pause = false;
+        // pause = false;
     }
 }

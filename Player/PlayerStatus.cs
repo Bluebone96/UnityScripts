@@ -49,7 +49,7 @@ public class PlayerStatus : MonoBehaviour {
             || Mathf.Abs(pos.y - transform.position.y) > 1
             || Mathf.Abs(pos.z - transform.position.z) > 1)
         {
-            gameObject.transform.localPosition = Vector3.MoveTowards(gameObject.transform.localPosition, pos, m_protoInfo.Speed * 10);
+            gameObject.transform.localPosition = Vector3.MoveTowards(gameObject.transform.localPosition, pos, m_protoInfo.Speed * 5);
         }
         //        m_Queue.Enqueue(new PlayerInfo(m_protoInfo));
         
@@ -60,10 +60,9 @@ public class PlayerStatus : MonoBehaviour {
     {
         m_protoInfo  = myInfo;
         m_protoInfo.Op = new Operation();
-        
-        // m_protoInfo.Op.H = 0;
-        // m_protoInfo.Op.V = 0;
-        // m_protoInfo.Speed = 0;
+        Debug.Log("player name: " + m_protoInfo.Name + " id: " + m_protoInfo.Id);
+        Debug.Log("player posx: " + m_protoInfo.PosX + " poxz: " + m_protoInfo.PosZ);
+        Debug.Log("player speed: " + m_protoInfo.Speed);
         move = Vector3.zero;
 
         m_anim = GetComponent<Animator>();
@@ -77,7 +76,7 @@ public class PlayerStatus : MonoBehaviour {
     // {
     //     Debug.Log("player speed = " + m_protoInfo.Speed);
     // }
-    void FixedUpdate()
+    void Update()
     {
         // Debug.Log("player speed " + m_protoInfo.Speed + "op h " + m_protoInfo.Op.H + " v " + m_protoInfo.Op.V);
         move.x = m_protoInfo.Op.H  * m_protoInfo.Speed;
@@ -89,7 +88,7 @@ public class PlayerStatus : MonoBehaviour {
             m_anim.SetTrigger(m_idWALK);
         }
         // Debug.Log("player fixed update move.x = " + move.x + "move.z = " + move.z);
-        transform.Translate(move * Time.fixedDeltaTime, Space.World);
+        transform.Translate(move * Time.deltaTime, Space.World);
     }
 
 

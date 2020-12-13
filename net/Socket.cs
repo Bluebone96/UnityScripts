@@ -6,23 +6,27 @@ using System.Net.Sockets;
 using UnityEngine;
 using Google.Protobuf;
 using Proto.Unity;
+using System.Threading;
 public class ClientSocket : Singleton<ClientSocket> 
 {
 
+    
+    public bool FLAG{get;set;}
     public Socket m_socket;
-    private byte[] m_recvbuf = new byte[4096];
+    private byte[] m_recvbuf = new byte[1024 * 16];
     // 左闭右开
     private MsgHead m_msgHeadRecv = new MsgHead();
 
-    private byte[] m_sendbuf = new byte[100];   // 目前只有玩家上传更新操作会用到
+    private byte[] m_sendbuf = new byte[256];   // 目前只有玩家上传更新操作会用到
     private MsgHead m_msgHeadSend = new MsgHead();
 
     private Message m_message; 
-    private int m_maxlen = 4096;
+    private int m_maxlen = 1024 * 16;
     private int m_head = 0;
     private int m_tail = 0;
 
     public SocketError m_errorCode = 0;
+    public Thread  recvMsgT;
 
     public  int ConnectServer(string server, int port)
     {   
@@ -33,13 +37,23 @@ public class ClientSocket : Singleton<ClientSocket>
         
         if (m_socket != null) {
             m_socket.Blocking = true;
+            FLAG = true;
+            recvMsgT = new Thread(RecvMessage);
+            recvMsgT.Start();
             return 0;
         }
         return -1;
     }
 
+    public void start_recvmessage() 
+    {
+        FLAG = true;
+        recvMsgT.Start();
+    }
     public void DisConnect()
     {
+        FLAG = false;
+        recvMsgT.Join();
         m_socket.Close();
     }
 
@@ -78,7 +92,7 @@ public class ClientSocket : Singleton<ClientSocket>
     }
 
 
-    public int RecvMessage()
+    public void RecvMessage()
     {
     //     int left = _len;
     //     int n = 0;
@@ -102,34 +116,36 @@ public class ClientSocket : Singleton<ClientSocket>
     //     }
 
     //     Debug.Log( " recv " + _len +  " data sucess");
-
-        
-        if (MsgHead.headsize() > (m_tail - m_head))
-        {
-            recv();
-            return -1;
-        }
-        else 
-        {
-            m_msgHeadRecv.DeCode(m_recvbuf, m_head);
-            if (m_msgHeadRecv.m_len > (m_tail - m_head - MsgHead.headsize())) {
-                recv();
-                Debug.Log("buffsize is " + (m_tail - m_head) + " less len " + m_msgHeadRecv.m_len);
-                return -1;
-            } else {
-                m_head += (int)MsgHead.headsize();
-                m_message.m_type = m_msgHeadRecv.getType();
-                m_message.m_usrid = m_msgHeadRecv.getId();
-                m_message.m_datalen = m_msgHeadRecv.m_len;
-                m_message.m_data = new byte [m_msgHeadRecv.m_len];
-                Array.Copy(m_recvbuf, m_head, m_message.m_data, 0, m_msgHeadRecv.m_len);
-                m_head += (int) m_msgHeadRecv.m_len;
-                Debug.Log("enqueue, type is" + m_message.m_type + "id is " + m_message.m_usrid);
-                GameManager.g_mQueue.Enqueue(m_message);
-                
-                return 1;
+        Debug.Log("Net Recv start, Flag = " + FLAG);
+        while (FLAG) {
+            if (MsgHead.headsize() > (m_tail - m_head))
+            {
+                if (recv() < 0) {
+                    Thread.Sleep(1000);
+                }
             }
+            else 
+            {
+                m_msgHeadRecv.DeCode(m_recvbuf, m_head);
+                if (m_msgHeadRecv.m_len > (m_tail - m_head - MsgHead.headsize())) {
+                    if (recv() < 0) {
+                        Thread.Sleep(1000);
+                    }
+                } else {
+                    m_head += (int)MsgHead.headsize();
+                    m_message.m_type = m_msgHeadRecv.getType();
+                    m_message.m_usrid = m_msgHeadRecv.getId();
+                    m_message.m_datalen = m_msgHeadRecv.m_len;
+                    m_message.m_data = new byte [m_msgHeadRecv.m_len];
+                    Array.Copy(m_recvbuf, m_head, m_message.m_data, 0, m_msgHeadRecv.m_len);
+                    m_head += (int) m_msgHeadRecv.m_len;
+                    Debug.Log("enqueue, type is" + m_message.m_type + "id is " + m_message.m_usrid);
+                    GameManager.g_mQueue.Enqueue(m_message);
+                }
+            }
+            Thread.Sleep(5);
         }
+        Debug.Log("Net Recv end, Flag = " + FLAG);
 
     }
 

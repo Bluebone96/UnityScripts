@@ -9,7 +9,7 @@ using UnityEngine;
 
 public struct Message {
     public EventType m_type {get; set;}
-    public UInt32     m_usrid { get; set;}
+    public UInt32 m_usrid { get; set;}
     public UInt32 m_datalen {get; set;}
     public byte[] m_data { get; set;}
 }
@@ -122,4 +122,27 @@ public class Endian {
         return hton_32(_x);
     }
 
-}
+};
+
+// public enum MsgFlag {
+//     INVALIED = -1,
+
+//     INACTIVE = 0,
+//     ACTIVE = 1
+// };
+
+// public class Message {
+//     public MsgFlag m_flag;
+
+//     public MsgHead m_head;
+//     public byte[] m_data;
+//     public void Decode()
+//     {
+//         m_head.DeCode(m_data, 0);
+//     }
+
+//     public void Encode()
+//     {
+//         m_head.EnCode(m_data, 0);
+//     }
+// };

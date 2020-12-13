@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Unity;
+using UnityEngine;
 using Google.Protobuf;
 using Proto.Unity;
+using System.Threading;
+
 public class EventHandler : Singleton<EventHandler>
 {
     public delegate int Foo(Message msg);
@@ -45,9 +47,13 @@ public class EventHandler : Singleton<EventHandler>
 
         if (GameManager.g_mQueue.Count != 0) {
 
-            m_message = GameManager.g_mQueue.Dequeue();
-            Debug.Log("Dequeue, type is" + m_message.m_type + " id is " + m_message.m_usrid);
-            return Handles[m_message.m_type](m_message);
+            if (GameManager.g_mQueue.TryDequeue(out m_message)) {
+                Debug.Log("Dequeue, type is" + m_message.m_type + " id is " + m_message.m_usrid);
+                return Handles[m_message.m_type](m_message);
+            } else {
+                Thread.Sleep(10);
+            }
+
         }
         return -1;
     }
@@ -104,6 +110,7 @@ public class EventHandler : Singleton<EventHandler>
 
     int ConnectGateServer(Message _msg)
     {
+        Debug.Log("connect gate server start");
         GameManager.Instance.GamePause();
         m_Net.DisConnect();
         ServerInfo gateserver = ServerInfo.Parser.ParseFrom(_msg.m_data);
@@ -125,12 +132,18 @@ public class EventHandler : Singleton<EventHandler>
         UIManager.Instance.ClosePanel("LoginPanel");
         UIManager.Instance.ShowPanel("PanelMain");
         GameManager.Instance.GameStart();
+        Debug.Log("connect gate server end");
         return 0;
     }
 
     int PlayerExit(Message _msg)
     {
-        GameManager.Instance.ExitGame();
+        Debug.Log("======================================");
+        Debug.Log("player exit id = " + _msg.m_usrid);
+
+        UnityEngine.Object.Destroy(GameManager.Instance.AllPlayers[_msg.m_usrid].gameObject);
+        GameManager.Instance.AllPlayers.Remove(_msg.m_usrid);
+
         return 1;
     }
 
@@ -152,9 +165,9 @@ public class EventHandler : Singleton<EventHandler>
         UInt32 id = _msg.m_usrid;
         if (id  == GameManager.Instance.mainPlayerID)
         {
-            PlayerInfo info = PlayerInfo.Parser.ParseFrom(_msg.m_data);
-            info.Op = GameManager.Instance.mainPlayer.m_protoInfo.Op;
-            GameManager.Instance.mainPlayer.CheckStatus(info);
+            // PlayerInfo info = PlayerInfo.Parser.ParseFrom(_msg.m_data);
+            // info.Op = GameManager.Instance.mainPlayer.m_protoInfo.Op;
+            // GameManager.Instance.mainPlayer.CheckStatus(info);
         } 
         else if (GameManager.Instance.AllPlayers.ContainsKey(id)) 
         {

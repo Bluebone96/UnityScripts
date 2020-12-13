@@ -6,5 +6,6 @@ public class UIRootHandler : MonoBehaviour {
         UIManager.Instance.m_CanvasRoot = gameObject;
         
         UIManager.Instance.ShowPanel("LoginPanel");
+        
     }
 }

@@ -132,14 +132,14 @@ public class ItemFactory : Singleton<ItemFactory>
         switch (_itemPb.MType)
         {
             case 0:
-                item =  new Money(_itemPb.MUid, "money", ItemType.MONEEY, 0, _itemPb.MCount, _itemPb.MPrice);
+                item =  new Money(_itemPb.MItemid, "money", ItemType.MONEEY, 0, _itemPb.MCount, _itemPb.MPrice);
                 break;
             case 1:
-                item = new ConsumeItem(_itemPb.MUid, "consume", ItemType.CONSUME, 0, _itemPb.MCount, _itemPb.MPrice);
+                item = new ConsumeItem(_itemPb.MItemid, "consume", ItemType.CONSUME, 0, _itemPb.MCount, _itemPb.MPrice);
                 item.setAttribute(AttributeType.HP, _itemPb.MHp);
                 break;
             case 2:
-                item = new ConsumeItem(_itemPb.MUid, "equip", ItemType.EQUIP, 0, _itemPb.MCount, _itemPb.MPrice);
+                item = new ConsumeItem(_itemPb.MItemid, "equip", ItemType.EQUIP, 0, _itemPb.MCount, _itemPb.MPrice);
                 item.setAttribute(AttributeType.ATK, _itemPb.MAtk);
                 break;
             default:

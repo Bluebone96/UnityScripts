@@ -3,14 +3,13 @@ syntax = "proto3";
 package Proto.Unity;
 
 message PlayerInfo {
-    
     uint32 id = 1;
     string name = 2;
 
     float posX = 3;
     float posZ = 4;
     float angle = 5;
-    float speed = 6;
+    int32 speed = 6;
     uint32 state = 7;   // 0 IDEL 1 WALK
 
     int32 Hp = 8;
@@ -47,7 +46,7 @@ message Authentication {
 //         EQUIP = 2;
 //     }
 //     uint32 m_mask=1;   // 或者 0不显示
-//     uint32 m_uid =2;
+//     uint32 m_itemid =2;
 //     uint32 m_type =3;
 //     uint32 m_lv =4;
 //     int32  m_price =8;
@@ -66,13 +65,16 @@ message Authentication {
 
 
 message ItemInfo {
-    uint32 m_uid = 1;
-    uint32 m_type = 2;
-    uint32 m_hp = 3;
-    uint32 m_mp = 4;
-    uint32 m_atk = 5;
-    uint32 m_price = 6;
-    uint32 m_count = 7;
+    uint32 m_usrid = 1;
+    uint32 m_itemid = 2;
+    uint32 m_type = 3;
+    uint32 m_count = 4;
+    string m_name = 5;
+    uint32 m_hp = 6;
+    uint32 m_mp = 7;
+    uint32 m_atk = 8;
+    uint32 m_def = 9;
+    uint32 m_price = 10;
 }
 
 

@@ -18,18 +18,22 @@ public class Inventory : Singleton<Inventory>
 
     public void Init(PlayerBag _bag)
     {
+        if (_bag == null) {
+            m_bagPB = new PlayerBag();
+        } else {
+            m_bagPB = _bag;
+        }
         Debug.Log("start init bag");
-        m_bagPB = _bag;
         baseBag = new uint[30];
         equipBag = new uint[10];
         moneyBag = new uint [4];
         m_baseItems = new Dictionary<uint, BaseItem>();
         int i = 0;
         foreach(ItemInfo item in m_bagPB.Items) {
-            Debug.Log("item id = " + item.MUid);
-            m_baseItems.Add(item.MUid, ItemFactory.Instance.CreateItem(item));
+            Debug.Log("item id = " + item.MItemid);
+            m_baseItems.Add(item.MItemid, ItemFactory.Instance.CreateItem(item));
 
-            baseBag[i++] = item.MUid; // 先全放在基础背包里，装备 和 金币 背包 还需要在 protobuf 里增加字段
+            baseBag[i++] = item.MItemid; // 先全放在基础背包里，装备 和 金币 背包 还需要在 protobuf 里增加字段
         }
         m_itemevent = new ItemEvent();
 
